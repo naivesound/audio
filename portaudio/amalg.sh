@@ -137,7 +137,7 @@ $(sed \
   -e 's!<Avrt.h>!<avrt.h>!' \
   -e 's!<Audioclient.h>!<audioclient.h>!' \
   -e 's!<mmdeviceapi.h>!<functiondiscoverykeys_devpkey.h>!' \
-  -e '/<functiondiscoverykeys.h>/a #include <mmdeviceapi.h>' \
+  -e '/<functiondiscoverykeys.h>/a\#include <mmdeviceapi.h>' \
   src/hostapi/wasapi/*.c)
 #endif /* PA_USE_WASAPI */
 

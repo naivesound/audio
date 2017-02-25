@@ -9851,8 +9851,6 @@ int PaUtil_TraceStubToSatisfyLinker(void)
 #endif /* TRACE_REALTIME_EVENTS */
 
 #ifdef WIN32
-#if PA_USE_WASAPI
-#endif /* PA_USE_WASAPI */
 /*
  * Microsoft COM initialization routines
  * Copyright (c) 1999-2011 Ross Bencina, Phil Burk
@@ -38945,6 +38943,7 @@ main (int argc, char *argv[])
 #endif /* PA_USE_OSS */
 
 #if PA_USE_WASAPI
+/* This is inspired by the patch from MXE to make it work with mingw */
 /*
  * Portable Audio I/O Library WASAPI implementation
  * Copyright (c) 2006-2010 David Viens, Dmitry Kostjuchenko
