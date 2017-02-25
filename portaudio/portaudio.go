@@ -25,8 +25,9 @@ package portaudio
 #cgo windows CFLAGS: -DPA_USE_WASAPI=1
 #cgo windows LDFLAGS: -lm -luuid -lksuser -lwinmm -lole32
 
-#cgo darwin CFLAGS: -DPA_USE_COREAUDIO=1
-#cgo darwin LDFLAGS: -framework CoreAudio -framework CoreMIDI -framework CoreFoundation
+#cgo darwin CFLAGS: -DPA_USE_COREAUDIO=1 -Wno-deprecated-declarations
+#cgo darwin LDFLAGS: -framework CoreServices -framework CoreAudio -framework CoreFoundation
+#cgo darwin LDFLAGS: -framework AudioUnit -framework AudioToolbox
 
 #include "portaudio.h"
 

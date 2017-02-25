@@ -111,8 +111,12 @@ $(cat src/hostapi/asio/*.cpp)
 #endif /* PA_USE_ASIO */
 
 #if PA_USE_COREAUDIO
-$(cat src/hostapi/coreaudio/*.h)
-$(cat src/hostapi/coreaudio/*.c)
+$(cat src/hostapi/coreaudio/pa_mac_core_utilities.h)
+$(cat src/hostapi/coreaudio/pa_mac_core_blocking.h)
+$(cat src/hostapi/coreaudio/pa_mac_core_internal.h)
+$(cat src/hostapi/coreaudio/pa_mac_core_blocking.c)
+$(cat src/hostapi/coreaudio/pa_mac_core_utilities.c)
+$(cat src/hostapi/coreaudio/pa_mac_core.c)
 #endif /* PA_USE_COREAUDIO */
 
 #if PA_USE_DS
@@ -137,7 +141,7 @@ $(sed \
   -e 's!<Avrt.h>!<avrt.h>!' \
   -e 's!<Audioclient.h>!<audioclient.h>!' \
   -e 's!<mmdeviceapi.h>!<functiondiscoverykeys_devpkey.h>!' \
-  -e '/<functiondiscoverykeys.h>/a\#include <mmdeviceapi.h>' \
+  -e '/<functiondiscoverykeys.h>/a #include <mmdeviceapi.h>' \
   src/hostapi/wasapi/*.c)
 #endif /* PA_USE_WASAPI */
 
