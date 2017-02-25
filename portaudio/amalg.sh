@@ -13,6 +13,10 @@ echo "Amalgamating to $AMALG_C and $AMALG_H..."
 sed 's!\(#include ".*.h"\)!// (amalg) \1!' >> $AMALG_H << EOF
 $(cat include/portaudio.h)
 
+#if PA_USE_DS || PA_USE_WASAPI || PA_USE_WMME
+$(cat include/pa_win_waveformat.h)
+#endif
+
 #if PA_USE_ASIO
 $(cat include/pa_asio.h)
 #endif
@@ -45,9 +49,6 @@ $(cat include/pa_win_wdmks.h)
 $(cat include/pa_win_wmme.h)
 #endif
 
-#if PA_USE_DS || PA_USE_WASAPI || PA_USE_WMME
-$(cat include/pa_win_waveformat.h)
-#endif
 EOF
 
 echo "#include \"$AMALG_H\"" > $AMALG_C
@@ -73,68 +74,87 @@ $(cat src/common/pa_util.h)
 $(cat src/common/*.c)
 
 #ifdef WIN32
-$(cat src/os/win/*.h)
-$(cat src/os/win/*.c)
+$(cat src/os/win/pa_win_coinitialize.h)
+$(cat src/os/win/pa_win_coinitialize.c)
+$(cat src/os/win/pa_win_hostapis.c)
+$(cat src/os/win/pa_win_util.c)
+$(cat src/os/win/pa_win_waveformat.c)
+#if 0
+$(cat src/os/win/pa_x86_plain_converters.h)
+$(cat src/os/win/pa_x86_plain_converters.c)
+#endif
+#if PA_USE_WDMKS
+$(cat src/os/win/pa_win_wdmks_utils.c)
+$(cat src/os/win/pa_win_wdmks_utils.h)
+#endif /* PA_USE_WDMKS */
 #else
 $(cat src/os/unix/*.h)
 $(cat src/os/unix/*.c)
-#endif
+#endif /* WIN32/UNIX */
 
 #if PA_USE_ALSA
 $(cat src/hostapi/alsa/*.h)
 $(cat src/hostapi/alsa/*.c)
-#endif
+#endif /* PA_USE_ALSA */
 
+/* PA_USE_ASIHPI */
 #if 0
 $(cat src/hostapi/asihpi/*.h)
 $(cat src/hostapi/asihpi/*.c)
-#endif
+#endif /* PA_USE_ASIHPI */
 
-#if PA_USE_ASIO
+/* PA_USE_ASIO */
+#if 0
 // This uses C++, not C!
 $(cat src/hostapi/asio/*.h)
 $(cat src/hostapi/asio/*.cpp)
-#endif
+#endif /* PA_USE_ASIO */
 
 #if PA_USE_COREAUDIO
 $(cat src/hostapi/coreaudio/*.h)
 $(cat src/hostapi/coreaudio/*.c)
-#endif
+#endif /* PA_USE_COREAUDIO */
 
 #if PA_USE_DS
 $(cat src/hostapi/dsound/*.h)
 $(cat src/hostapi/dsound/*.c)
-#endif
+#endif /* PA_USE_DS */
 
 #if PA_USE_JACK
 $(cat src/hostapi/jack/*.h)
 $(cat src/hostapi/jack/*.c)
-#endif
+#endif /* PA_USE_JACK */
 
 #if PA_USE_OSS
 $(cat src/hostapi/oss/*.h)
 $(cat src/hostapi/oss/*.c)
-#endif
+#endif /* PA_USE_OSS */
 
 #if PA_USE_WASAPI
-$(cat src/hostapi/wasapi/mingw-include/*.h)
-$(cat src/hostapi/wasapi/*.c)
-#endif
+/* This is inspired by the patch from MXE to make it work with mingw */
+$(sed \
+  -e 's!\(#if defined(_MSC_VER) && (_MSC_VER >= 1400)\)!\1 || defined(__MINGW64_VERSION_MAJOR)!' \
+  -e 's!<Avrt.h>!<avrt.h>!' \
+  -e 's!<Audioclient.h>!<audioclient.h>!' \
+  -e 's!<mmdeviceapi.h>!<functiondiscoverykeys_devpkey.h>!' \
+  -e '/<functiondiscoverykeys.h>/a #include <mmdeviceapi.h>' \
+  src/hostapi/wasapi/*.c)
+#endif /* PA_USE_WASAPI */
 
 #if PA_USE_WDMKS
 $(cat src/hostapi/wdmks/*.h)
 $(cat src/hostapi/wdmks/*.c) 
-#endif
+#endif /* PA_USE_WDMKS */
 
 #if PA_USE_WMME
 $(cat src/hostapi/wmme/*.h)
 $(cat src/hostapi/wmme/*.c)
-#endif
+#endif /* PA_USE_WMME */
 EOF
 
 mv $AMALG_C $AMALG_H ..
 cd ..
 
-rm -rf portaudio
+#rm -rf portaudio
 
 echo "Done."
