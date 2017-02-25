@@ -15,7 +15,7 @@ ifeq ($(windows),1)
 	LDFLAGS += -lm -lole32 -lksuser -lwinmm -lws2_32 -mwindows -static
 endif
 
-example: example.o soundio_amalg.o
+example: example.o ../soundio_amalg.o
 	$(CC) $^ $(LDFLAGS) -o $@
 clean:
-	rm -f example *.o
+	rm -f example example.exe example.o ../soundio_amalg.o

@@ -1,7 +1,7 @@
 #include <math.h>
 #include <stdio.h>
 
-#include "soundio.h"
+#include "../soundio.h"
 
 #define SAMPLE_RATE 44100
 #define SINE_HZ 440
