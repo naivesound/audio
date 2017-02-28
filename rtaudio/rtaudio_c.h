@@ -22,7 +22,7 @@ typedef unsigned long rtaudio_format_t;
 
 typedef unsigned int rtaudio_stream_flags_t;
 
-#define RTAUDIO_FLAGS_NONINTERLEAVED = 0x1
+#define RTAUDIO_FLAGS_NONINTERLEAVED 0x1
 #define RTAUDIO_FLAGS_MINIMIZE_LATENCY 0x2
 #define RTAUDIO_FLAGS_HOG_DEVICE 0x4
 #define RTAUDIO_FLAGS_SCHEDULE_REALTIME 0x8

@@ -107,8 +107,18 @@ type StreamParams struct {
 	FirstChannel uint
 }
 
+type StreamFlags C.rtaudio_stream_flags_t
+
+const (
+	FlagsNoninterleages   = C.RTAUDIO_FLAGS_NONINTERLEAVED
+	FlagsMinimizeLatency  = C.RTAUDIO_FLAGS_MINIMIZE_LATENCY
+	FlagsHogDevice        = C.RTAUDIO_FLAGS_HOG_DEVICE
+	FlagsScheduleRealtime = C.RTAUDIO_FLAGS_SCHEDULE_REALTIME
+	FlagsAlsaUseDefault   = C.RTAUDIO_FLAGS_ALSA_USE_DEFAULT
+)
+
 type StreamOptions struct {
-	Flags      int //rtaudio_stream_flags_t
+	Flags      StreamFlags
 	NumBuffers uint
 	Priotity   int
 	Name       string
@@ -344,6 +354,9 @@ func (audio *rtaudio) Open(out, in *StreamParams, format Format, sampleRate uint
 		c_in_ptr = &c_in
 	}
 	if opts != nil {
+		c_opts.flags = C.rtaudio_stream_flags_t(opts.Flags)
+		c_opts.num_buffers = C.uint(opts.NumBuffers)
+		c_opts.priority = C.int(opts.Priotity)
 		c_opts_ptr = &c_opts
 	}
 	frames_count := C.uint(frames)
@@ -394,9 +407,43 @@ func (audio *rtaudio) IsRunning() bool {
 	return C.rtaudio_is_stream_running(audio.audio) != 0
 }
 
-// TODO
-//	Latency() (int, error)
-//	SampleRate() (uint, error)
-//	Time() (float64, error)
-//	SetTime(float64) error
-//	ShowWarnings(bool)
+func (audio *rtaudio) Latency() (int, error) {
+	latency := C.rtaudio_get_stream_latency(audio.audio)
+	if C.rtaudio_error(audio.audio) != nil {
+		return 0, errors.New(C.GoString(C.rtaudio_error(audio.audio)))
+	}
+	return int(latency), nil
+}
+
+func (audio *rtaudio) SampleRate() (uint, error) {
+	sampleRate := C.rtaudio_get_stream_sample_rate(audio.audio)
+	if C.rtaudio_error(audio.audio) != nil {
+		return 0, errors.New(C.GoString(C.rtaudio_error(audio.audio)))
+	}
+	return uint(sampleRate), nil
+}
+
+func (audio *rtaudio) Time() (time.Duration, error) {
+	sec := C.rtaudio_get_stream_time(audio.audio)
+	if C.rtaudio_error(audio.audio) != nil {
+		return 0, errors.New(C.GoString(C.rtaudio_error(audio.audio)))
+	}
+	return time.Duration(time.Microsecond * time.Duration(sec*1000000.0)), nil
+}
+
+func (audio *rtaudio) SetTime(t time.Duration) error {
+	sec := float64(t) * 1000000.0 / float64(time.Microsecond)
+	C.rtaudio_set_stream_time(audio.audio, C.double(sec))
+	if C.rtaudio_error(audio.audio) != nil {
+		return errors.New(C.GoString(C.rtaudio_error(audio.audio)))
+	}
+	return nil
+}
+
+func (audio *rtaudio) ShowWarnings(show bool) {
+	if show {
+		C.rtaudio_show_warnings(audio.audio, 1)
+	} else {
+		C.rtaudio_show_warnings(audio.audio, 0)
+	}
+}

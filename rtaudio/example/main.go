@@ -5,7 +5,7 @@ import (
 	"math"
 	"time"
 
-	rtaudio "github.com/naivesound/audio/rtaudio"
+	"github.com/naivesound/audio/rtaudio"
 )
 
 const (
@@ -49,12 +49,12 @@ func main() {
 	}
 
 	params := rtaudio.StreamParams{
-		DeviceID:     4, //a.DefaultOutputDevice(),
+		DeviceID:     a.DefaultOutputDevice(),
 		NumChannels:  2,
 		FirstChannel: 0,
 	}
 	options := rtaudio.StreamOptions{
-	//
+		Flags: rtaudio.FlagsAlsaUseDefault,
 	}
 	err = a.Open(&params, nil, rtaudio.FormatFloat32, SampleRate, 2048, cb, &options)
 	if err != nil {
