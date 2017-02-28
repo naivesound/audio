@@ -104,11 +104,11 @@ rtaudio_device_info_t rtaudio_get_device_info(rtaudio_t audio, int i) {
   return result;
 }
 
-int rtaudio_get_default_output_device(rtaudio_t audio) {
+unsigned int rtaudio_get_default_output_device(rtaudio_t audio) {
   return audio->audio->getDefaultOutputDevice();
 }
 
-int rtaudio_get_default_input_device(rtaudio_t audio) {
+unsigned int rtaudio_get_default_input_device(rtaudio_t audio) {
   return audio->audio->getDefaultInputDevice();
 }
 

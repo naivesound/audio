@@ -13,20 +13,20 @@ extern "C" {
 
 typedef unsigned long rtaudio_format_t;
 
-static const rtaudio_format_t RTAUDIO_FORMAT_SINT8 = 0x1;
-static const rtaudio_format_t RTAUDIO_FORMAT_SINT16 = 0x2;
-static const rtaudio_format_t RTAUDIO_FORMAT_SINT24 = 0x4;
-static const rtaudio_format_t RTAUDIO_FORMAT_SINT32 = 0x8;
-static const rtaudio_format_t RTAUDIO_FORMAT_FLOAT32 = 0x10;
-static const rtaudio_format_t RTAUDIO_FORMAT_FLOAT64 = 0x20;
+#define RTAUDIO_FORMAT_SINT8 0x01
+#define RTAUDIO_FORMAT_SINT16 0x02
+#define RTAUDIO_FORMAT_SINT24 0x04
+#define RTAUDIO_FORMAT_SINT32 0x08
+#define RTAUDIO_FORMAT_FLOAT32 0x10
+#define RTAUDIO_FORMAT_FLOAT64 0x20
 
 typedef unsigned int rtaudio_stream_flags_t;
 
-static const rtaudio_stream_flags_t RTAUDIO_FLAGS_NONINTERLEAVED = 0x1;
-static const rtaudio_stream_flags_t RTAUDIO_FLAGS_MINIMIZE_LATENCY = 0x2;
-static const rtaudio_stream_flags_t RTAUDIO_FLAGS_HOG_DEVICE = 0x4;
-static const rtaudio_stream_flags_t RTAUDIO_FLAGS_SCHEDULE_REALTIME = 0x8;
-static const rtaudio_stream_flags_t RTAUDIO_FLAGS_ALSA_USE_DEFAULT = 0x10;
+#define RTAUDIO_FLAGS_NONINTERLEAVED = 0x1
+#define RTAUDIO_FLAGS_MINIMIZE_LATENCY 0x2
+#define RTAUDIO_FLAGS_HOG_DEVICE 0x4
+#define RTAUDIO_FLAGS_SCHEDULE_REALTIME 0x8
+#define RTAUDIO_FLAGS_ALSA_USE_DEFAULT 0x10
 
 typedef unsigned int rtaudio_stream_status_t;
 
@@ -113,8 +113,8 @@ RTAUDIOAPI rtaudio_api_t rtaudio_current_api(rtaudio_t audio);
 RTAUDIOAPI int rtaudio_device_count(rtaudio_t audio);
 RTAUDIOAPI rtaudio_device_info_t rtaudio_get_device_info(rtaudio_t audio,
 							 int i);
-RTAUDIOAPI int rtaudio_get_default_output_device(rtaudio_t audio);
-RTAUDIOAPI int rtaudio_get_default_input_device(rtaudio_t audio);
+RTAUDIOAPI unsigned int rtaudio_get_default_output_device(rtaudio_t audio);
+RTAUDIOAPI unsigned int rtaudio_get_default_input_device(rtaudio_t audio);
 
 RTAUDIOAPI int
 rtaudio_open_stream(rtaudio_t audio, rtaudio_stream_parameters_t *output_params,
