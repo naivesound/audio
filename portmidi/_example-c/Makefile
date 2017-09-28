@@ -2,7 +2,7 @@ ifeq ($(linux),1)
 	LDFLAGS += -lasound -pthread
 endif
 ifeq ($(macos),1)
-	LDFLAGS += -framework CoreMIDI -framework CoreFoundation
+	LDFLAGS += -framework CoreAudio -framework CoreMIDI -framework CoreFoundation -framework CoreServices
 endif
 ifeq ($(windows),1)
 	LDFLAGS += -lm -lole32 -lksuser -lwinmm -lws2_32 -mwindows -static

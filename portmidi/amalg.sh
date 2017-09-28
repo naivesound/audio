@@ -27,6 +27,8 @@ $(cat pm_linux/pmlinuxalsa.h)
 $(cat pm_win/pmwinmm.h)
 #elif __APPLE__
 $(cat pm_mac/pmmac.h)
+$(cat pm_mac/pmmacosxcm.h)
+$(cat pm_mac/readbinaryplist.h)
 #else
 #error "Unknown platform"
 #endif
@@ -50,6 +52,11 @@ $(cat porttime/ptwinmm.c)
 $(cat pm_win/pmwin.c)
 $(cat pm_win/pmwinmm.c)
 #elif __APPLE__
+$(cat porttime/ptmacosx_cf.c)
+$(cat pm_mac/pmmac.c)
+$(cat pm_mac/pmmacosxcm.c)
+$(cat pm_mac/readbinaryplist.c)
+$(cat pm_mac/finddefault.c)
 #endif
 EOF
 
