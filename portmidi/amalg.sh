@@ -23,6 +23,7 @@ $(cat porttime/porttime.h)
 $(cat pm_linux/pmlinux.h)
 $(cat pm_linux/pmlinuxalsa.h)
 #elif _WIN32
+#include <windows.h>
 $(cat pm_win/pmwinmm.h)
 #elif __APPLE__
 $(cat pm_mac/pmmac.h)
@@ -45,6 +46,9 @@ $(cat pm_linux/pmlinux.c)
 $(cat pm_linux/pmlinuxalsa.c)
 $(cat pm_linux/finddefault.c)
 #elif _WIN32
+$(cat porttime/ptwinmm.c)
+$(cat pm_win/pmwin.c)
+$(cat pm_win/pmwinmm.c)
 #elif __APPLE__
 #endif
 EOF

@@ -1066,6 +1066,7 @@ void pm_linuxalsa_term(void);
 
 
 #elif _WIN32
+#include <windows.h>
 /* midiwin32.h -- system-specific definitions */
 
 void pm_winmm_init( void );
