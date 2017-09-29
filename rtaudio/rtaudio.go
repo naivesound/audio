@@ -15,7 +15,7 @@ package rtaudio
 
 #include "rtaudio_c.h"
 
-int CgoCallback(void *out, void *in, unsigned int nFrames,
+extern int goCallback(void *out, void *in, unsigned int nFrames,
 			    double stream_time, rtaudio_stream_status_t status,
 			    void *userdata);
 
@@ -23,6 +23,7 @@ int CgoCallback(void *out, void *in, unsigned int nFrames,
 import "C"
 import (
 	"errors"
+	"sync"
 	"time"
 	"unsafe"
 )
@@ -315,15 +316,49 @@ func (b *buffer) Float64() []float64 {
 
 type Callback func(out Buffer, in Buffer, dur time.Duration, status StreamStatus) int
 
+var (
+	mu     sync.Mutex
+	audios = map[int]*rtaudio{}
+)
+
+func registerAudio(a *rtaudio) int {
+	mu.Lock()
+	defer mu.Unlock()
+	for i := 0; ; i++ {
+		if _, ok := audios[i]; !ok {
+			audios[i] = a
+			return i
+		}
+	}
+}
+
+func unregisterAudio(a *rtaudio) {
+	mu.Lock()
+	defer mu.Unlock()
+	for i := 0; ; i++ {
+		if audios[i] == a {
+			delete(audios, i)
+			return
+		}
+	}
+}
+
+func findAudio(k int) *rtaudio {
+	mu.Lock()
+	defer mu.Unlock()
+	return audios[k]
+}
+
 //export goCallback
 func goCallback(out, in unsafe.Pointer, frames C.uint, sec C.double,
-	status C.rtaudio_stream_status_t, userdata unsafe.Pointer) int {
+	status C.rtaudio_stream_status_t, userdata unsafe.Pointer) C.int {
 
-	audio := (*rtaudio)(userdata)
+	k := int(uintptr(userdata))
+	audio := findAudio(k)
 	dur := time.Duration(time.Microsecond * time.Duration(sec*1000000.0))
 	inbuf := &buffer{audio.format, int(frames), audio.inputChannels, in}
 	outbuf := &buffer{audio.format, int(frames), audio.outputChannels, out}
-	return audio.cb(outbuf, inbuf, dur, StreamStatus(status))
+	return C.int(audio.cb(outbuf, inbuf, dur, StreamStatus(status)))
 }
 
 func (audio *rtaudio) Open(out, in *StreamParams, format Format, sampleRate uint,
@@ -362,9 +397,11 @@ func (audio *rtaudio) Open(out, in *StreamParams, format Format, sampleRate uint
 	frames_count := C.uint(frames)
 	audio.format = format
 	audio.cb = cb
+
+	k := registerAudio(audio)
 	C.rtaudio_open_stream(audio.audio, c_out_ptr, c_in_ptr,
 		C.rtaudio_format_t(format), C.uint(sampleRate), &frames_count,
-		C.rtaudio_cb_t(C.CgoCallback), unsafe.Pointer(audio), c_opts_ptr, nil)
+		C.rtaudio_cb_t(C.goCallback), unsafe.Pointer(uintptr(k)), c_opts_ptr, nil)
 	if C.rtaudio_error(audio.audio) != nil {
 		return errors.New(C.GoString(C.rtaudio_error(audio.audio)))
 	}
@@ -372,6 +409,7 @@ func (audio *rtaudio) Open(out, in *StreamParams, format Format, sampleRate uint
 }
 
 func (audio *rtaudio) Close() {
+	unregisterAudio(audio)
 	C.rtaudio_close_stream(audio.audio)
 }
 
