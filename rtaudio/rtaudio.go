@@ -10,7 +10,7 @@ package rtaudio
 #cgo windows CXXFLAGS: -D__WINDOWS_WASAPI__
 #cgo windows LDFLAGS: -lm -luuid -lksuser -lwinmm -lole32
 
-#cgo darwin CXXFLAGS: -D__MAXOSX_CORE__
+#cgo darwin CXXFLAGS: -D__MACOSX_CORE__
 #cgo darwin LDFLAGS: -framework CoreAudio -framework CoreFoundation
 
 #include "rtaudio_c.h"
