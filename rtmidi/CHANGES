@@ -1,0 +1,2 @@
+1. struct RtMidiApi
+2. const char *rtmidi_version()
