@@ -132,7 +132,7 @@ type RtAudio interface {
 	DefaultOutputDevice() int
 	DefaultInputDevice() int
 
-	Open() error
+	Open(out, in *StreamParams, format Format, sampleRate uint, frames uint, cb Callback, opts *StreamOptions) error
 	Close()
 	Start() error
 	Stop() error
@@ -143,8 +143,8 @@ type RtAudio interface {
 
 	Latency() (int, error)
 	SampleRate() (uint, error)
-	Time() (float64, error)
-	SetTime(float64) error
+	Time() (time.Duration, error)
+	SetTime(time.Duration) error
 
 	ShowWarnings(bool)
 }
@@ -156,6 +156,8 @@ type rtaudio struct {
 	outputChannels int
 	format         Format
 }
+
+var _ RtAudio = &rtaudio{}
 
 func Create(api API) (*rtaudio, error) {
 	audio := C.rtaudio_create(C.rtaudio_api_t(api))
@@ -173,12 +175,12 @@ func (audio *rtaudio) CurrentAPI() API {
 	return API(C.rtaudio_current_api(audio.audio))
 }
 
-func (audio *rtaudio) DefaultInputDevice() uint {
-	return uint(C.rtaudio_get_default_input_device(audio.audio))
+func (audio *rtaudio) DefaultInputDevice() int {
+	return int(C.rtaudio_get_default_input_device(audio.audio))
 }
 
-func (audio *rtaudio) DefaultOutputDevice() uint {
-	return uint(C.rtaudio_get_default_output_device(audio.audio))
+func (audio *rtaudio) DefaultOutputDevice() int {
+	return int(C.rtaudio_get_default_output_device(audio.audio))
 }
 
 func (audio *rtaudio) Devices() ([]DeviceInfo, error) {
@@ -189,6 +191,13 @@ func (audio *rtaudio) Devices() ([]DeviceInfo, error) {
 		if C.rtaudio_error(audio.audio) != nil {
 			return nil, errors.New(C.GoString(C.rtaudio_error(audio.audio)))
 		}
+		sr := []int{}
+		for _, r := range cinfo.sample_rates {
+			if r == 0 {
+				break
+			}
+			sr = append(sr, int(r))
+		}
 		devices = append(devices, DeviceInfo{
 			Name:                C.GoString(&cinfo.name[0]),
 			Probed:              cinfo.probed != 0,
@@ -198,8 +207,8 @@ func (audio *rtaudio) Devices() ([]DeviceInfo, error) {
 			IsDefaultOutput:     cinfo.is_default_output != 0,
 			IsDefaultInput:      cinfo.is_default_input != 0,
 			PreferredSampleRate: uint(cinfo.preferred_sample_rate),
+			SampleRates:         sr,
 		})
-		// TODO: sample rates
 		// TODO: formats
 	}
 	return devices, nil
