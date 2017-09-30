@@ -69,7 +69,12 @@ func (api API) String() string {
 	return "?"
 }
 
-type StreamStatus int
+type StreamStatus C.rtaudio_stream_status_t
+
+const (
+	StatusInputOverflow   StreamStatus = C.RTAUDIO_STATUS_INPUT_OVERFLOW
+	StatusOutputUnderflow StreamStatus = C.RTAUDIO_STATUS_OUTPUT_UNDERFLOW
+)
 
 func Version() string {
 	return C.GoString(C.rtaudio_version())
