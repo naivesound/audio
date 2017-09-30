@@ -30,8 +30,8 @@ typedef unsigned int rtaudio_stream_flags_t;
 
 typedef unsigned int rtaudio_stream_status_t;
 
-static const rtaudio_stream_status_t RTAUDIO_STATUS_INPUT_OVERFLOW = 0x1;
-static const rtaudio_stream_status_t RTAUDIO_STATUS_OUTPUT_UNDERFLOW = 0x2;
+#define RTAUDIO_STATUS_INPUT_OVERFLOW 0x1
+#define RTAUDIO_STATUS_OUTPUT_UNDERFLOW 0x2
 
 typedef int (*rtaudio_cb_t)(void *out, void *in, unsigned int nFrames,
 			    double stream_time, rtaudio_stream_status_t status,
