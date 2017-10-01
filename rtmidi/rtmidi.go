@@ -1,6 +1,9 @@
 package rtmidi
 
 /*
+#cgo CXXFLAGS: -g
+#cgo LDFLAGS: -g
+
 #cgo linux CXXFLAGS: -D__LINUX_ALSA__
 #cgo linux LDFLAGS: -lasound -pthread
 #cgo windows CXXFLAGS: -D__WINDOWS_MM__
@@ -24,7 +27,7 @@ static inline void cgoSetCallback(RtMidiPtr in, void *arg) {
 import "C"
 import (
 	"errors"
-	"log"
+	"sync"
 	"unsafe"
 )
 
@@ -61,7 +64,6 @@ func CompiledAPI() (apis []API) {
 	n := C.rtmidi_get_compiled_api(nil)
 	capis := make([]C.enum_RtMidiApi, n, n)
 	C.rtmidi_get_compiled_api(&capis[0])
-	log.Println(capis)
 	for _, capi := range capis {
 		apis = append(apis, API(capi))
 	}
@@ -180,6 +182,7 @@ func (m *midiIn) API() (API, error) {
 }
 
 func (m *midiIn) Close() error {
+	unregisterMIDIIn(m)
 	if err := m.midi.Close(); err != nil {
 		return err
 	}
@@ -195,16 +198,50 @@ func (m *midiIn) IgnoreTypes(midiSysex bool, midiTime bool, midiSense bool) erro
 	return nil
 }
 
+var (
+	mu     sync.Mutex
+	inputs = map[int]*midiIn{}
+)
+
+func registerMIDIIn(m *midiIn) int {
+	mu.Lock()
+	defer mu.Unlock()
+	for i := 0; ; i++ {
+		if _, ok := inputs[i]; !ok {
+			inputs[i] = m
+			return i
+		}
+	}
+}
+
+func unregisterMIDIIn(m *midiIn) {
+	mu.Lock()
+	defer mu.Unlock()
+	for i := 0; i < len(inputs); i++ {
+		if inputs[i] == m {
+			delete(inputs, i)
+			return
+		}
+	}
+}
+
+func findMIDIIn(k int) *midiIn {
+	mu.Lock()
+	defer mu.Unlock()
+	return inputs[k]
+}
+
 //export goMIDIInCallback
 func goMIDIInCallback(ts C.double, msg *C.uchar, msgsz C.size_t, arg unsafe.Pointer) {
-	m := (*midiIn)(arg)
+	k := int(uintptr(arg))
+	m := findMIDIIn(k)
 	m.cb(m, C.GoBytes(unsafe.Pointer(msg), C.int(msgsz)), float64(ts))
-	log.Println()
 }
 
 func (m *midiIn) SetCallback(cb func(MIDIIn, []byte, float64)) error {
+	k := registerMIDIIn(m)
 	m.cb = cb
-	C.cgoSetCallback(m.in, unsafe.Pointer(m))
+	C.cgoSetCallback(m.in, unsafe.Pointer(uintptr(k)))
 	if !m.in.ok {
 		return errors.New(C.GoString(m.in.msg))
 	}
@@ -212,6 +249,7 @@ func (m *midiIn) SetCallback(cb func(MIDIIn, []byte, float64)) error {
 }
 
 func (m *midiIn) CancelCallback() error {
+	unregisterMIDIIn(m)
 	C.rtmidi_in_cancel_callback(m.in)
 	if !m.in.ok {
 		return errors.New(C.GoString(m.in.msg))

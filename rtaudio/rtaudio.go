@@ -2,7 +2,8 @@ package rtaudio
 
 /*
 
-#cgo LDFLAGS: -lstdc++
+#cgo CXXFLAGS: -g
+#cgo LDFLAGS: -lstdc++ -g
 
 #cgo linux CXXFLAGS: -D__LINUX_ALSA__
 #cgo linux LDFLAGS: -lm -lasound -pthread
@@ -349,7 +350,7 @@ func registerAudio(a *rtaudio) int {
 func unregisterAudio(a *rtaudio) {
 	mu.Lock()
 	defer mu.Unlock()
-	for i := 0; ; i++ {
+	for i := 0; i < len(audios); i++ {
 		if audios[i] == a {
 			delete(audios, i)
 			return
